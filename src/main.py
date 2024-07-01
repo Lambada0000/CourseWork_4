@@ -1,45 +1,42 @@
-import requests
-
-# url_get = "https://api.hh.ru/vacancies"
-# response = requests.get(url_get)
-# print(response)
-# print(response.text)
-# print(response.json())
+from src.class_HeadHunterAPI import HeadHunterApi
+from src.class_VacanciesHH import VacanciesHH
+from src.class_WorkWithFile import SaveJson
+from src.utils import filter_by_salary, filter_by_keyword
 
 
-class Parser:
-    """Абстрактный класс для работы с API сервиса с вакансиями."""
-    def __init__(self, file_worker):
-        pass
+# Функция для взаимодействия с пользователем
+def user_interaction():
+    search_query = input("Введите поисковый запрос: ").lower()
+    filter_words = input("Введите ключевые слова для фильтрации вакансий: ").split()
+    salary_range = input("Введите диапазон зарплат: ")  # Пример: 100000 - 150000
+    top_n = int(input("Введите количество вакансий для вывода в топ N: "))
 
-    def load_vacancies(self, keyword):
-        pass
+    # Создание экземпляра класса для работы с API сайтов с вакансиями
+    hh = HeadHunterApi()
+
+    # Подключаемся к API и получаем вакансии по ключевому слову
+    hh_vacancies = hh.load_vacancies(search_query)
+
+    file_worker = SaveJson('data.json')  # название файла, куда будут сохраняться вакансии
+    file_worker.add_vacancy(hh_vacancies)
+
+    vacancies = [
+        VacanciesHH(
+            name=vacancy['name'],
+            link=vacancy['url'],
+            salary_from=vacancy['salary'].get('from') if vacancy['salary'] else 0,
+            salary_to=vacancy['salary'].get('to') if vacancy['salary'] else 0,
+            currency=vacancy['salary'].get('currency') if vacancy['salary'] else '',
+            description=vacancy['snippet']['responsibility'],
+            requirements=vacancy['snippet']['requirement'])
+        for vacancy in file_worker.get_vacancy()['items']]
+
+    filtered_vacancies = filter_by_keyword(vacancies, filter_words)
+    ranged_vacancies = filter_by_salary(filtered_vacancies, salary_range)
+    sorted_vacancies = sorted(ranged_vacancies, reverse=True)
+    top_ranged_vacancies = sorted_vacancies[:top_n]
+    print(top_ranged_vacancies)
 
 
-class HeadHunterApi(Parser):
-    """
-    Класс для работы с API HeadHunter, умеет подключаться к API и получать вакансии.
-    """
-
-    def __init__(self, file_worker):
-        self.url = 'https://api.hh.ru/vacancies'
-        self.headers = {'User-Agent': 'HH-User-Agent'}
-        self.params = {'text': '', 'page': 0, 'per_page': 100}
-        self.vacancies = []
-        super().__init__(file_worker)
-
-    def load_vacancies(self, keyword):
-        self.params['text'] = keyword
-        while self.params.get('page') != 20:
-            response = requests.get(self.url, headers=self.headers, params=self.params)
-            vacancies = response.json()['items']
-            self.vacancies.extend(vacancies)
-            self.params['page'] += 1
-            print(response.json())
-
-
-# Создание экземпляра класса для работы с API сайтов с вакансиями
-hh_api = HeadHunterApi('разработчик')
-
-# Получение вакансий с hh.ru в формате JSON
-hh_vacancies = hh_api.load_vacancies("Python")
+if __name__ == "__main__":
+    user_interaction()

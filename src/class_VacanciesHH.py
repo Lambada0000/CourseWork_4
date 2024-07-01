@@ -8,6 +8,7 @@ class VacanciesHH:
         self.currency = currency
         self.description = description
         self.requirements = requirements
+        self.validate_data()
 
     def __repr__(self):
         """Строковое представление объекта класса VacanciesHH"""
@@ -26,4 +27,8 @@ class VacanciesHH:
     def validate_data(self):
         """Валидирует данные, которыми инициализируются атрибуты"""
         if not self.salary_from and not self.salary_to:
-            self.salary_from = "Зарплата не указана"
+            self.salary_from = 0
+        elif not self.salary_from:
+            self.salary_from = 0
+        elif not self.salary_to:
+            self.salary_to = 0
