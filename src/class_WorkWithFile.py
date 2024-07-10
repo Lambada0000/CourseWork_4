@@ -25,40 +25,13 @@ class SaveJson(WorkWithFile):
 
     def add_vacancy(self, vacancy_data):
         """Добавляет вакансии в файл json."""
-        with open(self.file_name, 'w') as file:
+        with open(self.file_name, 'w', encoding='utf-8') as file:
             json.dump(vacancy_data, file, ensure_ascii=False)
             # file.write('\n')
 
     def get_vacancy(self):
         """Получает данные по вакансиям из файла."""
-        with open(self.file_name, 'r') as file:
-            vacancies = json.load(file)
-            return vacancies
-
-    def del_vacancy(self):
-        """Удаляет информацию о вакансиях."""
-        pass
-
-
-    @abstractmethod
-    def del_vacancy(self):
-        pass
-
-
-class SaveJson(WorkWithFile):
-    """Класс для сохранения информации о вакансиях в json file"""
-    def __init__(self, file_name):
-        self.file_name = file_name
-
-    def add_vacancy(self, vacancy_data):
-        """Добавляет вакансии в файл json."""
-        with open(self.file_name, 'a') as file:
-            json.dump(vacancy_data, file)
-            file.write('\n')
-
-    def get_vacancy(self):
-        """Получает данные по вакансиям из файла."""
-        with open(self.file_name, 'r') as file:
+        with open(self.file_name, 'r', encoding='utf-8') as file:
             vacancies = json.load(file)
             return vacancies
 
